@@ -47,14 +47,14 @@ We get the following output:
 ```
 /.php                (Status: 403)
 /login.php           (Status: 200)
-/assets              (Status: 301)[--> http://10.10.1.219/assets/]
+/assets              (Status: 301)[--> <IP>/assets/]
 /portal.php          (Status: 302)[--> /login.php]
 /.php                (Status: 403)
 ```
 Looks like the `<IP>/login.php` will be the way to go.
 
 ### Login page 
-By viewing the login page, we can clearly see that it does what the filename states, allowing a user to login. Before looking for possible vulnerabilities, we can try the credentials we have discovered earlier.
+By viewing the login page, we can clearly see that it does what the filename states: allowing a user to log in. Before looking for possible vulnerabilities, we can try the credentials we have discovered earlier.
 
 ![loginpage](images/loginpage.png)
 
@@ -74,7 +74,7 @@ Output: XX. XXXXXXX XXXX
 
 The directory also has a file called `clue.txt`, but the hint is not really useful.
 
-2. We still need two more flags. I assumed there will be one user flag, within the `/home` directory of a specfic user and the other one is going to be the root flag. For the user flag, we have to check what users are available. Simply running `ls /home` tells us that there is a user named rick and `ls /home/rick` shows that the second flag is within rick's home directory called `second ingredients`. We can get the flag with `cd /home/rick && less 'second ingredients'`
+2. We still need two more flags. I assumed there will be one user flag, within the `/home` directory of a specfic user and the other one is going to be the root flag. For the user flag, we have to check what users are available. Simply running `ls /home` tells us that there is a user named rick and `ls /home/rick` shows that the second flag is within rick's home directory called `second ingredients`. We can get the flag with `cd /home/rick && less 'second ingredients'`.
 
 Output: X XXXXX XXXX
 
@@ -87,7 +87,7 @@ User www-data may run the following commands on ip-<IP>:
     (ALL) NOPASSWD: ALL
 ```
 
-`(ALL) NOPASSWD: ALL` means we can just directly execute commands as the superuser without needing a password, so all we have to do to get the root flag is `sudo less /root/3rd.txt`
+`(ALL) NOPASSWD: ALL` means the user www-data can just directly execute commands with `sudo` as the superuser without needing a password, so all we have to do to get the root flag is `sudo less /root/3rd.txt`.
 
 Output: 3rd ingredients: XXXXX XXXXX
 
