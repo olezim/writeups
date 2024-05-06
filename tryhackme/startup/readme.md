@@ -216,8 +216,7 @@ Last login: Wed Apr 24 13:14:31 2024 from XX.X.XXX.XX
 $ 
 ```
 
-Next up I tried `sudo -l`, but unfortunately, lennie is not allowed to use `sudo`, so there has to be something else.
-The */home/lennie/scripts/* looks promising. It contains the file "planner.sh".
+Next up I tried `sudo -l`, but unfortunately, lennie is not allowed to use `sudo`, so there has to be something else. */home/lennie/scripts/* looks promising. It contains the file "planner.sh".
 ```
 $ cat planner.sh
 #!/bin/bash
@@ -225,7 +224,7 @@ echo $LIST > /home/lennie/scripts/startup_list.txt
 /etc/print.sh
 $ 
 ```
-Sadly, we cannot modify its content, because the file belongs to root and lennie has not enough permission to write to it. It does execute another script though.
+Sadly, we cannot modify its content because the file belongs to root and lennie has not enough permission to write to it. It does execute another script though.
 ```
 $ cat /etc/print.sh
 #!/bin/bash
