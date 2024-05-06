@@ -244,6 +244,7 @@ $ cat /etc/print.sh
 $ 
 ```
 The problem: print.sh or planner.sh need to be executed as root if we want to receive a root-shell.
+
 The key: The startup_list.txt seems to get modified every minute or so. Assuming there is a service, running as root, executing the planner.sh script, which modifies the .txt file and would also execute print.sh, we would just need to wait for the next cycle. If print.sh gets executed as root, we will retrieve a root-shell.
 `user@parrot ~ $ nc -lvnp 4444`
 
