@@ -167,7 +167,7 @@ XXX{XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX}
 www-data@THM-Chal:/home/itguy$ 
 ```
 
-## Catching the Root-Flag
+## Catching the root-flag
 ```
 ww-data@THM-Chal:/home/itguy$ sudo -l 
 Matching Defaults entries for www-data on THM-Chal:
