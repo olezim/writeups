@@ -104,13 +104,11 @@ kali@kali:~/CTFs/wgelctf$
 ```
 kali@kali:~/CTFs/wgelctf/ssh_access$ curl $TARGETIP/sitemap/.ssh/id_rsa -o id_rsa
 
-kali@kali:~/CTFs/wgelctf/ssh_access$ chmod 600 id_rsa                            
-                                                                                                                                        
-kali@kali:~/CTFs/wgelctf/ssh_access$ 
+kali@kali:~/CTFs/wgelctf/ssh_access$ chmod 600 id_rsa
 ```
 2. Collecting necessary information
-- private key authorization requires a username
--> *http://<TARGETIP>* source code includes this: `<!-- Jessie don't forget to udate the webiste -->` -> jessie seems to be a username
+- SSH private key authorization still requires a username
+-> the source-code of http://<TARGETIP> contains: `<!-- Jessie don't forget to udate the webiste -->` -> jessie seems to be a username
 
 ### Try authentication
 ```
@@ -153,7 +151,7 @@ User jessie may run the following commands on CorpOne:
 jessie@CorpOne:~$ 
 ```
 
-- wget can be used as root
+- wget can be used as root -> we can transfer the flag file to our attacker-machine
 
 SSH-shell:
 ```
