@@ -108,7 +108,7 @@ kali@kali:~/CTFs/wgelctf/ssh_access$ chmod 600 id_rsa
 ```
 2. Collecting necessary information
 - SSH private key authorization still requires a username
--> the source-code of http://<TARGETIP> contains: `<!-- Jessie don't forget to udate the webiste -->` -> jessie seems to be a username
+-> the source-code of http://TARGETIP contains: `<!-- Jessie don't forget to udate the webiste -->` -> jessie seems to be a username
 
 ### Try authentication
 ```
