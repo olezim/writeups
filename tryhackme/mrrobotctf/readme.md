@@ -92,7 +92,7 @@ User-agent: *
 fsocity.dic
 key-1-of-3.txt
 ```
-- the first key can be directly obtained from <TARGETIP>/key-1-of-3.txt (XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX)
+- the first key can be directly obtained from */key-1-of-3.txt* (XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX)
 - fsocity.dic is a file containing language dictionary information -> a pretty long wordlist, might have login information hidden inside
 
 ### Inspecting */license*
@@ -108,7 +108,7 @@ elliot:ER28-0652
 ```
 
 ## Reverse-Shell
-Lets try the credentials we just discovered to log into wordpress (http://<TARGETIP>/wp-login/).
+Lets try the credentials we just discovered to log into wordpress (http://TARGETIP/wp-login/). They work.
 
 ![dashboard](images/dashboard.png)
 
@@ -117,7 +117,7 @@ Assuming we are able upload files or change existing code, it is an ease to get 
 ![revshell](images/revshell.png)
 
 1. setup a listener `nc -lvnp 9001`
-2. execute the edited php file -> http://<TARGETIP>/wp-includes/themes/TwentyThirteen/404.php
+2. execute the edited php file -> http://TARGETIP/wp-includes/themes/TwentyThirteen/404.php
 
 ## User-flag
 We are now logged in as "daemon". The user-flag will lie within someones home-directory. There is only one user, called **robot**, having a directory in */home*, but as current user, we cannot access the flag, due to lack of permissions. Apparently, to our favor, robot kept his password as md5-hash.
