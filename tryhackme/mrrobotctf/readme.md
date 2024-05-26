@@ -221,7 +221,7 @@ robot@linux:/usr/local/bin$
 ### Using `nmap` to promote to root
 - [GTFObins](https://gtfobins.github.io/gtfobins/nmap/)
 
-![gtfobins](images/gtfobins.png)
+![gtfobins](images/gtfobin.png)
 
 ```
 robot@linux:/usr/local/bin$ nmap --interactive
