@@ -151,7 +151,7 @@ User merlin may run the following commands on ubuntu:
     (root : root) NOPASSWD: /usr/bin/zip
 merlin@ubuntu:~$ 
 ```
-- /usr/bin/zip can be executed as root without a password via sudo -> privilege escalation
+- /usr/bin/zip can be executed as root without a password via `sudo -> privilege escalation
 - [GTFOBins](https://gtfobins.github.io/gtfobins/zip/)
 
 ```
